@@ -17,7 +17,6 @@ func NewMySQLFlightRepository() *MySQLRepository {
 	return &MySQLRepository{conn: conn}
 }
 
-// Save: Inserta un nuevo vuelo en la base de datos
 func (r *MySQLRepository) Save(f *domain.Flight) error {
 	if f.TotalSeats <= 0 {
 		return fmt.Errorf("total_seats debe ser mayor que 0")
@@ -40,7 +39,6 @@ func (r *MySQLRepository) Save(f *domain.Flight) error {
 	return nil
 }
 
-// Delete: Elimina un vuelo por ID
 func (r *MySQLRepository) Delete(id string) error {
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -52,7 +50,6 @@ func (r *MySQLRepository) Delete(id string) error {
 	return err
 }
 
-// Update: Modifica un vuelo existente
 func (r *MySQLRepository) Update(id string, f *domain.Flight) error {
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -64,7 +61,6 @@ func (r *MySQLRepository) Update(id string, f *domain.Flight) error {
 	return err
 }
 
-// GetAll: Obtiene todos los vuelos disponibles
 func (r *MySQLRepository) GetAll() ([]domain.Flight, error) {
 	query := "SELECT id, origin, destination, total_seats, available_seats, status FROM flights"
 	rows, err := r.conn.DB.Query(query)
@@ -84,7 +80,6 @@ func (r *MySQLRepository) GetAll() ([]domain.Flight, error) {
 	return flights, nil
 }
 
-// GetByID: Obtiene un vuelo por su ID
 func (r *MySQLRepository) GetByID(id string) (*domain.Flight, error) {
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -102,9 +97,7 @@ func (r *MySQLRepository) GetByID(id string) (*domain.Flight, error) {
 	return &flight, nil
 }
 
-// Reservar: Crea una nueva reserva en un vuelo
 func (r *MySQLRepository) Reservar(userID int, flightID int, seats int) error {
-	// Verificar disponibilidad de asientos
 	var availableSeats int
 	query := "SELECT available_seats FROM flights WHERE id = ?"
 	err := r.conn.DB.QueryRow(query, flightID).Scan(&availableSeats)
@@ -116,14 +109,12 @@ func (r *MySQLRepository) Reservar(userID int, flightID int, seats int) error {
 		return fmt.Errorf("no hay suficientes asientos disponibles")
 	}
 
-	// Insertar la reserva
 	insertQuery := "INSERT INTO reservations (user_id, flight_id, seats, status) VALUES (?, ?, ?, 'pending')"
 	_, err = r.conn.DB.Exec(insertQuery, userID, flightID, seats)
 	if err != nil {
 		return fmt.Errorf("error al registrar la reserva: %v", err)
 	}
 
-	// Actualizar asientos disponibles
 	updateQuery := "UPDATE flights SET available_seats = available_seats - ? WHERE id = ?"
 	_, err = r.conn.DB.Exec(updateQuery, seats, flightID)
 	if err != nil {
