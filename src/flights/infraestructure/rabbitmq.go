@@ -13,7 +13,7 @@ type RabbitMQPublisher struct {
 }
 
 func NewRabbitMQPublisher() (*RabbitMQPublisher, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@3.225.46.249:5672/") // URL de RabbitMQ
+	conn, err := amqp.Dial("amqp://guest:guest@3.225.46.249:5672/") 
 	if err != nil {
 		return nil, fmt.Errorf("error conectando a RabbitMQ: %v", err)
 	}
@@ -27,7 +27,6 @@ func NewRabbitMQPublisher() (*RabbitMQPublisher, error) {
 }
 
 func (r *RabbitMQPublisher) Publish(event string, data interface{}) error {
-	// Asegúrate de que la cola 'flight_created' esté declarada
 	_, err := r.Channel.QueueDeclare(
 		"flight_created",
 		true,
